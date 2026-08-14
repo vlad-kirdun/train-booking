@@ -46,10 +46,21 @@ _Filled in as the work lands._
 - **Server-side results pipeline.** Budget filtering, price sorting and pagination run on the
   server over the whole route dataset, because the API has no price filter. The result count is
   the post-filter count, so pagination never promises pages the budget has excluded.
+- **Search results page** at `/trains`, server-rendered and mobile-first: station pickers with a
+  swap, optional date, budget, price sorting and pagination as plain links, a route-aware title,
+  and dead ends that offer to undo one specific filter. The form works without JavaScript and
+  upgrades to a clean canonical URL when it is available.
 
 ## What was not implemented and why
 
-_To be completed at submission._
+_To be completed at submission. Known deferrals so far:_
+
+- **Train photos.** The API supplies an `image` per train. They are stock images that carry no
+  information for choosing between trains, and remote images on a list view cost exactly the
+  load speed the brief calls critical. Skipped in the list.
+- **A collapsible filter panel on narrow screens.** The form sits above the results on mobile.
+  A results-first layout would be better for the 60% of traffic on phones, but the JavaScript-free
+  ways to do it are unreliable across browsers, so it is deferred rather than hacked.
 
 ## Assumptions
 

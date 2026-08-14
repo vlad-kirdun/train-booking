@@ -252,6 +252,28 @@ Async Server Components cannot be rendered by Vitest. Test them by extracting th
 `src/domain` / `src/lib`, and cover the rendered output through the server-HTML checks described
 in the README verification steps.
 
+When asserting on server-rendered markup with `grep`, remember React splits interpolated text
+with `<!-- -->` markers, so `Page 1 of 15` appears as `Page <!-- -->1<!-- --> of <!-- -->15`.
+Match around the interpolation, not through it.
+
+## UI conventions
+
+- **Navigation over interaction.** Sorting and pagination are links, not controls: each state is
+  its own address, so it is shareable, crawlable and reachable with the back button, at no
+  JavaScript cost. Do not replace them with client-side handlers.
+- **The form submits by navigating.** It is a real `method="get"` form so it works without
+  JavaScript; the submit handler upgrades that to a client-side push of the canonical path
+  built by `buildSearchPath`. Form values are fed through `parseSearchQuery`, the same parser
+  the URL uses, so a typed value and a pasted value cannot be read differently.
+- **Native `<select>` for stations**, not a custom listbox. On mobile — 60% of traffic — it
+  opens the platform picker, which beats anything we would build, and it survives without
+  JavaScript. Reach for Radix only where a native element genuinely cannot do the job.
+- **Dead ends offer a way out.** An empty result links to the search with one specific filter
+  removed; a page past the end links back to page one. "No results" on its own leaves the user
+  guessing which of four inputs is at fault.
+- **Seat counts in the list are labelled as a snapshot**, never as a promise. The list is served
+  from cache; the detail page and the booking response are the authority.
+
 ## Definition of done
 
 Every step produces a working slice of functionality. A step is finished only when all four hold:
