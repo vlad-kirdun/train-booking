@@ -40,6 +40,9 @@ _Filled in as the work lands._
 - **API client.** Zod-validated responses, per-request timeouts, backoff retries on `GET` only,
   and a closed set of typed failures (`not_found`, `conflict`, `timeout`, `network`,
   `invalid_response`, …) that the UI layers can branch on. Fully covered by tests.
+- **Shareable search URLs.** `?from&to&date&maxPrice&sort&page` parsed and written in one place,
+  in a fixed order and without defaults, so the same search always produces the same link and a
+  link mangled in transit still opens a usable page.
 
 ## What was not implemented and why
 

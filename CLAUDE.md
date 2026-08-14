@@ -182,10 +182,34 @@ Search state lives in the URL. Saved trains live in the store above. That is all
 is, and it is why this project has **no Redux, Zustand, or TanStack Query** — a client cache
 would duplicate what React Server Components already do. Do not add one.
 
-`parseSearchQuery` / `serializeSearchQuery` in `src/domain/search-query.ts` are the only place
-that reads or writes the URL contract. They emit parameters in a deterministic order so the same
-search always produces a byte-identical link, clamp out-of-range values, and drop invalid ones
-instead of throwing. This is what makes requirement 2 hold.
+`src/domain/search-query.ts` is the only place that reads or writes the URL contract. Nothing
+else may reach into `searchParams` directly, or the guarantees below stop holding.
+
+| Parameter  | Values                      | Default     |
+| ---------- | --------------------------- | ----------- |
+| `from`     | station slug                | —           |
+| `to`       | station slug                | —           |
+| `date`     | `YYYY-MM-DD`                | all dates   |
+| `maxPrice` | positive integer, inclusive | no ceiling  |
+| `sort`     | `price_asc` \| `price_desc` | `price_asc` |
+| `page`     | integer ≥ 1                 | `1`         |
+
+Note that `sort` is one parameter, not the API's `sortBy` + `sortOrder` pair. The URL is a
+product surface that gets shared and indexed, so it is shaped for readers rather than mirroring
+the upstream; `getSearchResults` translates.
+
+Two properties are load-bearing and have tests of their own:
+
+- **Deterministic.** Fields serialise in a fixed order and defaults are omitted, so the same
+  search always yields the same string. Without this, "the recipient sees the same search"
+  degrades into near-identical links, and canonical tags and caches stop lining up.
+- **Total.** Any input parses. Out-of-range values are clamped and invalid ones dropped rather
+  than throwing, because a link mangled by a chat app must still open a usable page. Impossible
+  dates such as `2026-02-31` are rejected here — the API answers them with an empty list, which
+  a user reads as "no trains" rather than "broken link".
+
+Whether a slug names a real station is not checked here; that needs `/stations` and happens at
+the page level. `withSearchQuery` resets to page 1 on any change other than paging itself.
 
 ## SEO
 
