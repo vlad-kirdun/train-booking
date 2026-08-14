@@ -43,6 +43,9 @@ _Filled in as the work lands._
 - **Shareable search URLs.** `?from&to&date&maxPrice&sort&page` parsed and written in one place,
   in a fixed order and without defaults, so the same search always produces the same link and a
   link mangled in transit still opens a usable page.
+- **Server-side results pipeline.** Budget filtering, price sorting and pagination run on the
+  server over the whole route dataset, because the API has no price filter. The result count is
+  the post-filter count, so pagination never promises pages the budget has excluded.
 
 ## What was not implemented and why
 

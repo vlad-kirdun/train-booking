@@ -139,7 +139,15 @@ inconsistent size. `total` must always be the count _after_ price filtering.
 
 This approach is only sound because the dataset is tiny (141 records overall, at most ~18 per
 route). It is documented in the README as a scaling caveat: a real catalogue would require the
-API to support `maxPrice`.
+API to support `maxPrice`. `getSearchResults` enforces that boundary — if the upstream ever
+reports more trains than it returned, it throws instead of filtering a truncated dataset, since
+quietly showing the wrong cheapest train is a failure nobody would notice.
+
+Sorting is local too, and not delegated to the API's `sortBy`. Pagination happens here, so the
+order has to be decided here or the two would disagree. The comparator carries an explicit
+tie-break on date, then time, then id: prices repeat heavily in this dataset — a single route
+can hold four pairs of identical prices — and without a total order two requests could order
+them differently, so a user paging through would see one train twice while another vanished.
 
 ### Booking
 

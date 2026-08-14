@@ -8,5 +8,11 @@ export {
   type TrainListParams,
 } from "./endpoints";
 export { ApiError, type ApiErrorKind, isApiError, isRetryable } from "./errors";
+export {
+  getSearchResults,
+  ROUTE_DATASET_LIMIT,
+  SEARCH_CACHE_SECONDS,
+  TRAINS_CACHE_TAG,
+} from "./get-search-results";
 export { type CallOptions } from "./http";
 export type { Booking, Station, Train, TrainListResponse } from "./schemas";
