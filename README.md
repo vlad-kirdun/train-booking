@@ -15,8 +15,8 @@ npm run dev
 
 The app runs at [http://localhost:3000](http://localhost:3000).
 
-Copy `.env.example` to `.env.local` to configure `TRAIN_API_BASE_URL`. The example file already
-points at the public assignment API, so no edits are needed to run it as-is.
+No configuration is required: the API base URL defaults to the public assignment API. To point
+it elsewhere, copy `.env.example` to `.env.local` and set `TRAIN_API_BASE_URL`.
 
 ### Other commands
 
@@ -32,10 +32,14 @@ points at the public assignment API, so no edits are needed to run it as-is.
 
 ## What was implemented
 
-_Filled in as the work lands. Currently: project scaffold — Next.js 16 App Router with
-TypeScript strict mode, Tailwind CSS v4, the Vitest + React Testing Library + MSW test harness,
-ESLint flat config with zero-warning enforcement, Prettier, and a CI workflow that runs lint,
-typecheck, coverage and build on every push._
+_Filled in as the work lands._
+
+- **Project scaffold.** Next.js 16 App Router with TypeScript strict mode, Tailwind CSS v4, a
+  Vitest + React Testing Library + MSW test harness, ESLint flat config with zero-warning
+  enforcement, Prettier, and CI running lint, typecheck, coverage and build on every push.
+- **API client.** Zod-validated responses, per-request timeouts, backoff retries on `GET` only,
+  and a closed set of typed failures (`not_found`, `conflict`, `timeout`, `network`,
+  `invalid_response`, …) that the UI layers can branch on. Fully covered by tests.
 
 ## What was not implemented and why
 
