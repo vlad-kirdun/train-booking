@@ -198,6 +198,50 @@ describe("error mapping", () => {
   });
 });
 
+// A hung API costs the per-attempt timeout once per attempt. Without a ceiling
+// on the whole call that is half a minute of skeleton, which is precisely the
+// "looks broken" the loading states exist to prevent.
+describe("the total time budget", () => {
+  const hang = () =>
+    server.use(
+      http.get(endpoint, async () => {
+        await delay(5_000);
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+
+  test("caps a single attempt at whatever is left of the budget", async () => {
+    hang();
+    const startedAt = Date.now();
+
+    const error = await expectApiError(
+      request({ timeoutMs: 5_000, budgetMs: 150, retry: { attempts: 0 } }),
+    );
+
+    expect(error.kind).toBe("timeout");
+    expect(Date.now() - startedAt).toBeLessThan(1_000);
+  });
+
+  test("stops retrying once the budget is spent", async () => {
+    let calls = 0;
+    server.use(
+      http.get(endpoint, async () => {
+        calls += 1;
+        await delay(5_000);
+        return HttpResponse.json({ ok: true });
+      }),
+    );
+    const startedAt = Date.now();
+
+    await expectApiError(
+      request({ timeoutMs: 5_000, budgetMs: 200, retry: { attempts: 5 } }),
+    );
+
+    expect(Date.now() - startedAt).toBeLessThan(1_500);
+    expect(calls).toBeLessThan(5);
+  });
+});
+
 describe("retries", () => {
   test("retries a failing GET and succeeds once the API recovers", async () => {
     let calls = 0;

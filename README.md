@@ -50,6 +50,11 @@ _Filled in as the work lands._
   swap, optional date, budget, price sorting and pagination as plain links, a route-aware title,
   and dead ends that offer to undo one specific filter. The form works without JavaScript and
   upgrades to a clean canonical URL when it is available.
+- **Resilience to a slow or missing API.** The page shell streams immediately with a results
+  skeleton, so the form is usable while the search is still in flight. A failed search reports
+  what went wrong — slow, unreachable, misbehaving — and offers a retry, without taking the form
+  down with it. Every request is bounded by a total time budget, and a warm cache keeps the page
+  alive even when the API is completely down.
 
 ## What was not implemented and why
 

@@ -13,6 +13,13 @@ export interface RouteSelection {
   unknown: string[];
 }
 
+/** Stands in when the station directory could not be loaded at all. */
+export const EMPTY_ROUTE: RouteSelection = {
+  from: undefined,
+  to: undefined,
+  unknown: [],
+};
+
 export function resolveRoute(
   query: Pick<SearchQuery, "from" | "to">,
   stations: readonly Station[],

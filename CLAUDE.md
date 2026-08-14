@@ -256,6 +256,34 @@ When asserting on server-rendered markup with `grep`, remember React splits inte
 with `<!-- -->` markers, so `Page 1 of 15` appears as `Page <!-- -->1<!-- --> of <!-- -->15`.
 Match around the interpolation, not through it.
 
+## Failure and loading states
+
+The brief asks that these not make the site look broken, which makes them
+functionality rather than polish. Three rules, each of which came out of watching a real
+failure rather than reasoning about one.
+
+- **Handle expected failures where they happen, not at the boundary.** `error.tsx` is a client
+  component: when a Server Component throws, the document arrives with an empty `<body>` and the
+  message only appears after hydration — never, without JavaScript. A blank first paint is
+  exactly the failure being avoided. So the results section catches its own error and renders
+  `ResultsError` inline, and a missing station directory renders `PageFailure` from the server.
+  The boundary stays a net for the genuinely unexpected.
+- **A failed results list must not take the form with it.** Catching inside the Suspense boundary
+  keeps the search usable, so the user can retry or change the search instead of losing what they
+  typed.
+- **Retry links are plain anchors**, not router calls: a full document request works without
+  JavaScript and cannot replay a stale client cache.
+
+`apiRequest` enforces `budgetMs` (12s) across all attempts, not just `timeoutMs` (8s) per
+attempt. Measured against a hung API, per-attempt timeouts alone kept the user waiting 24.8
+seconds; the budget brings that to 12. Do not raise it without re-checking what the wait feels
+like.
+
+The stale-cache fallback comes from the framework rather than our code: `force-cache` with
+`revalidate` keeps serving the last good response while revalidation fails in the background.
+With the API completely down but the cache warm, the heading, the form and the station options
+still render and only the results area reports the failure.
+
 ## UI conventions
 
 - **Navigation over interaction.** Sorting and pagination are links, not controls: each state is

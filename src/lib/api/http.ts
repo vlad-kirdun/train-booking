@@ -18,7 +18,10 @@ export interface CallOptions {
   cache?: RequestCache;
   revalidate?: number | false;
   tags?: string[];
+  /** Ceiling for a single attempt. */
   timeoutMs?: number;
+  /** Ceiling for the whole call, retries and backoff included. */
+  budgetMs?: number;
   retry?: RetryPolicy;
   signal?: AbortSignal;
 }
@@ -33,6 +36,17 @@ export interface RequestOptions<T> extends CallOptions {
 
 /** The upstream cold-starts in a couple of seconds; this leaves room for that. */
 export const DEFAULT_TIMEOUT_MS = 8_000;
+
+/**
+ * How long the caller may be kept waiting in total.
+ *
+ * Without it, a hung API costs the per-attempt timeout once per attempt: 8s
+ * three times over plus backoff is close to half a minute of skeleton, which is
+ * exactly the "looks broken" the brief asks us to avoid. Each attempt is capped
+ * by whatever is left of this budget, so the ceiling holds however the retries
+ * play out.
+ */
+export const DEFAULT_BUDGET_MS = 12_000;
 export const DEFAULT_RETRY_ATTEMPTS = 2;
 export const DEFAULT_RETRY_BASE_DELAY_MS = 250;
 
@@ -47,16 +61,28 @@ export async function apiRequest<T>(options: RequestOptions<T>): Promise<T> {
     ? (options.retry?.attempts ?? DEFAULT_RETRY_ATTEMPTS)
     : 0;
   const baseDelayMs = options.retry?.baseDelayMs ?? DEFAULT_RETRY_BASE_DELAY_MS;
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const budgetMs = options.budgetMs ?? DEFAULT_BUDGET_MS;
+  const startedAt = Date.now();
 
   for (let attempt = 0; ; attempt += 1) {
+    const remaining = budgetMs - (Date.now() - startedAt);
+
     try {
-      return await performRequest(options);
+      return await performRequest({
+        ...options,
+        // Never wait past the budget, even on the first attempt.
+        timeoutMs: Math.max(1, Math.min(timeoutMs, remaining)),
+      });
     } catch (error) {
-      const exhausted = attempt >= attempts;
+      const backoffMs = baseDelayMs * 2 ** attempt;
+      const exhausted =
+        attempt >= attempts || Date.now() - startedAt + backoffMs >= budgetMs;
+
       if (!(error instanceof ApiError) || exhausted || !isRetryable(error)) {
         throw error;
       }
-      await delay(baseDelayMs * 2 ** attempt);
+      await delay(backoffMs);
     }
   }
 }

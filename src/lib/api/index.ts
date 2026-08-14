@@ -7,6 +7,10 @@ export {
   getTrains,
   type TrainListParams,
 } from "./endpoints";
+export {
+  describeApiFailure,
+  type FailureDescription,
+} from "./describe-failure";
 export { ApiError, type ApiErrorKind, isApiError, isRetryable } from "./errors";
 export {
   getSearchResults,
