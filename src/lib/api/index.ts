@@ -12,6 +12,7 @@ export {
   type FailureDescription,
 } from "./describe-failure";
 export { ApiError, type ApiErrorKind, isApiError, isRetryable } from "./errors";
+export { getRoutePairs, type RoutePair } from "./get-route-pairs";
 export {
   getSearchResults,
   ROUTE_DATASET_LIMIT,

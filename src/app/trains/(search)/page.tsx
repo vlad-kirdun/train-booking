@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { EmptyPage, EmptyResults } from "@/components/empty-results";
+import { JsonLd } from "@/components/json-ld";
 import { PageFailure } from "@/components/page-failure";
+import { PopularRoutes } from "@/components/popular-routes";
 import { Pagination } from "@/components/pagination";
 import { ResultsError } from "@/components/results-error";
 import { ResultsSkeleton } from "@/components/results-skeleton";
@@ -23,19 +25,35 @@ import {
   type SearchQuery,
   serializeSearchQuery,
 } from "@/domain/search-query";
-import { getSearchResults, getStations, type Station } from "@/lib/api";
+import {
+  breadcrumbListJsonLd,
+  canonicalSearchPath,
+  shouldIndexSearch,
+} from "@/domain/seo";
+import {
+  getRoutePairs,
+  getSearchResults,
+  getStations,
+  type Station,
+} from "@/lib/api";
+import { getSiteUrl } from "@/lib/site";
 
 export async function generateMetadata(
   props: PageProps<"/trains">,
 ): Promise<Metadata> {
   const { query, route } = await resolveSearch(props);
 
+  const indexable = shouldIndexSearch(query, route);
+
   return {
     title: routeTitle(route),
     description: routeDescription(route),
-    // Filtered and paged variants stay out of the index in the SEO pass; this
-    // keeps the noise down until then.
-    robots: hasFilters(query) ? { index: false, follow: true } : undefined,
+    // Every sorted, filtered and paged view of a route collapses onto the one
+    // address worth ranking.
+    alternates: { canonical: canonicalSearchPath(route) },
+    // `follow` so a crawler still walks from a filtered page to the trains and
+    // routes it links; only the page itself is withheld from the index.
+    robots: indexable ? undefined : { index: false, follow: true },
   };
 }
 
@@ -53,8 +71,25 @@ export default async function TrainsPage(props: PageProps<"/trains">) {
 
   const searchKey = serializeSearchQuery(query).toString();
 
+  const isHub = route.from === undefined && route.to === undefined;
+
   return (
     <main className="mx-auto grid w-full max-w-3xl gap-6 px-4 py-6 sm:py-10">
+      <JsonLd
+        data={breadcrumbListJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: "Trains", path: "/trains" },
+            ...(isHub
+              ? []
+              : [
+                  { name: routeTitle(route), path: canonicalSearchPath(route) },
+                ]),
+          ],
+          getSiteUrl(),
+        )}
+      />
+
       <header className="grid gap-1">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {routeTitle(route)}
@@ -88,8 +123,23 @@ export default async function TrainsPage(props: PageProps<"/trains">) {
       <Suspense key={searchKey} fallback={<ResultsSkeleton />}>
         <Results query={query} route={route} />
       </Suspense>
+
+      {/* Only on the hub. A query-based URL scheme gives a crawler no path
+          structure to walk, so these links are how the route pages are found
+          at all. */}
+      {isHub && (
+        <Suspense fallback={null}>
+          <HubLinks />
+        </Suspense>
+      )}
     </main>
   );
+}
+
+async function HubLinks() {
+  const pairs = await getRoutePairs().catch(() => []);
+
+  return <PopularRoutes pairs={pairs.slice(0, 12)} />;
 }
 
 async function Results({
@@ -183,10 +233,4 @@ async function resolveSearch(props: PageProps<"/trains">): Promise<{
     stations: directory.stations,
     stationsError: undefined,
   };
-}
-
-function hasFilters(query: SearchQuery): boolean {
-  return (
-    query.date !== undefined || query.maxPrice !== undefined || query.page > 1
-  );
 }

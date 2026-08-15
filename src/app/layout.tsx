@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { getSiteUrl } from "@/lib/site";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,6 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Makes every `alternates.canonical` below resolve to an absolute URL, which
+  // is what a canonical tag has to be.
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Train search",
     template: "%s | Train search",

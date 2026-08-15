@@ -15,8 +15,9 @@ npm run dev
 
 The app runs at [http://localhost:3000](http://localhost:3000).
 
-No configuration is required: the API base URL defaults to the public assignment API. To point
-it elsewhere, copy `.env.example` to `.env.local` and set `TRAIN_API_BASE_URL`.
+No configuration is required: the API base URL defaults to the public assignment API. To point it
+elsewhere, or to set the absolute base used by canonical tags and the sitemap, copy
+`.env.example` to `.env.local` and edit it.
 
 ### Other commands
 
@@ -63,6 +64,11 @@ _Filled in as the work lands._
   are not reordered into the list: a train saved from page 3 would never surface on page 1,
   which is the opposite of why it was saved. A saved train deliberately does not remember how
   many seats were left.
+- **SEO for the query-based URL scheme.** Route-aware titles and descriptions, a canonical
+  collapsing every filtered and paged view onto one address, `noindex, follow` everywhere else,
+  `BreadcrumbList` structured data, `robots.txt`, and a `sitemap.xml` generated from the routes
+  that actually run trains. The `/trains` hub links those routes internally — without it a
+  crawler has no path structure to follow.
 - **Resilience to a slow or missing API.** The page shell streams immediately with a results
   skeleton, so the form is usable while the search is still in flight. A failed search reports
   what went wrong — slow, unreachable, misbehaving — and offers a retry, without taking the form

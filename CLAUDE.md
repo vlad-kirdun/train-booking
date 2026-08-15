@@ -253,10 +253,25 @@ The URL scheme is query-based (`/trains?from=berlin&to=munich`) by an explicit p
 Do not propose migrating to path URLs; instead get the most out of this scheme:
 
 - `generateMetadata` per route pair, phrased the way people search.
-- `canonical` pointing at the clean `?from=X&to=Y` form.
-- `noindex, follow` for filtered combinations and pages beyond the first.
-- JSON-LD, `robots.txt`, and a `sitemap.xml` built from real station pairs.
-- A `/trains` hub that links popular routes internally.
+- `canonical` pointing at the clean `?from=X&to=Y` form, built from the **resolved** route so a
+  slug naming no station canonicalises to the hub instead of inventing one.
+- Only two kinds of page are indexed: the hub, and an unfiltered route pair. Filtered, sorted,
+  paged and one-sided views get `noindex, follow` — withheld from the index, still crawled onward.
+- Individual trains are `noindex, follow` too. A departure is transient inventory; indexing
+  thousands of them fills the index with URLs that stop existing, and the ranking value is in the
+  route pages. They are also absent from the sitemap for the same reason.
+- `sitemap.xml` is built from routes that **actually run trains** (`getRoutePairs`), not from all
+  110 station combinations — most of which return nothing.
+- The `/trains` hub links those routes internally. This is load-bearing, not decoration: a
+  query-based URL scheme gives a crawler no path structure to walk, so without these links the
+  route pages are undiscoverable.
+- Structured data is `BreadcrumbList` only. Marking a seat reservation up as a `Product` to chase
+  a rich result would be asserting things about the page that are not true.
+
+`SITE_URL` feeds `metadataBase`, the sitemap and the JSON-LD. `robots.ts` and `sitemap.ts` are
+`force-dynamic` on purpose: prerendered, they bake in whatever `SITE_URL` was at build time, so a
+deploy that sets it only at runtime would point crawlers at localhost. The upstream call behind
+the sitemap stays cached for a day, so this costs a render rather than a request.
 
 ## Testing
 

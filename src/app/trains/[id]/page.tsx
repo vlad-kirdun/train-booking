@@ -4,16 +4,20 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { BookingForm } from "@/components/booking-form";
+import { JsonLd } from "@/components/json-ld";
 import { PageFailure } from "@/components/page-failure";
 import { TrainDetail } from "@/components/train-detail";
 import { formatFullDate } from "@/domain/format";
 import {
   buildSearchPath,
   buildTrainPath,
+  EMPTY_SEARCH_QUERY,
   parseSearchQuery,
   type SearchQuery,
 } from "@/domain/search-query";
+import { breadcrumbListJsonLd } from "@/domain/seo";
 import { getTrain, isApiError, type Train } from "@/lib/api";
+import { getSiteUrl } from "@/lib/site";
 
 /**
  * Never cached. Seat availability is the one number on this page that has to be
@@ -45,6 +49,13 @@ export async function generateMetadata(
   return {
     title: `${train.trainNumber}: ${train.from} to ${train.to}`,
     description: `${train.trainNumber} departs ${train.from} at ${train.departureTime} on ${formatFullDate(train.departureDate)} and arrives in ${train.to} at ${train.arrivalTime}.`,
+    // The search that led here is navigation state, not a different page.
+    alternates: { canonical: `/trains/${id}` },
+    // A single departure is transient inventory: it sells out and it passes.
+    // Indexing thousands of them would fill the index with URLs that stop
+    // existing, and the ranking value lives in the route pages regardless.
+    // `follow` keeps the links from here working for a crawler.
+    robots: { index: false, follow: true },
   };
 }
 
@@ -68,6 +79,25 @@ export default async function TrainPage(props: PageProps<"/trains/[id]">) {
 
   return (
     <main className="mx-auto grid w-full max-w-3xl gap-6 px-4 py-6 sm:py-10">
+      <JsonLd
+        data={breadcrumbListJsonLd(
+          [
+            { name: "Home", path: "/" },
+            { name: "Trains", path: "/trains" },
+            {
+              name: `${train.from} to ${train.to} trains`,
+              path: buildSearchPath({
+                ...EMPTY_SEARCH_QUERY,
+                from: query.from,
+                to: query.to,
+              }),
+            },
+            { name: train.trainNumber, path: `/trains/${id}` },
+          ],
+          getSiteUrl(),
+        )}
+      />
+
       <BackToResults query={query} />
       <TrainDetail train={train} />
       <BookingForm
