@@ -1,3 +1,4 @@
+import { SaveTrainButton } from "@/components/save-train-button";
 import { formatFullDate, formatPrice } from "@/domain/format";
 import type { Train } from "@/lib/api";
 
@@ -48,14 +49,18 @@ export function TrainDetail({ train }: { train: Train }) {
         </div>
       </dl>
 
-      <p
-        className={soldOut ? "font-medium" : "text-muted"}
-        data-testid="availability"
-      >
-        {soldOut
-          ? "This train is fully booked."
-          : `${String(train.seatsLeft)} of ${String(train.totalSeats)} seats are available right now.`}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p
+          className={soldOut ? "font-medium" : "text-muted"}
+          data-testid="availability"
+        >
+          {soldOut
+            ? "This train is fully booked."
+            : `${String(train.seatsLeft)} of ${String(train.totalSeats)} seats are available right now.`}
+        </p>
+
+        <SaveTrainButton train={train} />
+      </div>
     </article>
   );
 }

@@ -58,6 +58,11 @@ _Filled in as the work lands._
   optimistic UI: the only figure shown as fact is one the server returned. A `409` reports the
   real remaining count, lowers the form's limit to it, and offers the way back to the other
   trains on the same search.
+- **Saved trains for comparing a few options.** Kept in `localStorage`, since accounts are next
+  quarter, and shown in a pinned block above the results with a badge on matching cards. They
+  are not reordered into the list: a train saved from page 3 would never surface on page 1,
+  which is the opposite of why it was saved. A saved train deliberately does not remember how
+  many seats were left.
 - **Resilience to a slow or missing API.** The page shell streams immediately with a results
   skeleton, so the form is usable while the search is still in flight. A failed search reports
   what went wrong — slow, unreachable, misbehaving — and offers a retry, without taking the form

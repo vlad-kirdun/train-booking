@@ -198,7 +198,19 @@ in the list itself. They are deliberately not reordered inline: reordering only 
 visible page, so a saved train sitting on page 3 would never surface on page 1 — which is the
 opposite of what the user asked for when they saved it.
 
-Reads must tolerate corrupted JSON, schema drift, a missing `localStorage`, and quota errors.
+Reads must tolerate corrupted JSON, schema drift, a missing `localStorage`, and quota errors. A
+single unreadable entry is dropped; it does not take the rest of somebody's shortlist with it.
+A failed write still updates the in-memory list, so the shortlist works for the session even
+when the browser refuses to persist it.
+
+**A saved train never remembers `seatsLeft`.** A seat count frozen at the moment of saving is
+exactly the false availability requirement 3 rules out. The saved card links to the train's own
+page, which reads the real figure.
+
+The empty-on-the-server behaviour is asserted, not assumed: `saved-trains-panel.test.tsx`
+renders the panel through `renderToStaticMarkup` with a populated shortlist and expects empty
+output. If the server ever rendered a list it cannot know about, hydration would throw the tree
+away.
 
 ## State management
 
@@ -332,6 +344,13 @@ still render and only the results area reports the failure.
   guessing which of four inputs is at fault.
 - **Seat counts in the list are labelled as a snapshot**, never as a promise. The list is served
   from cache; the detail page and the booking response are the authority.
+- **Repeated controls get an explicit `aria-label`.** A list of twenty buttons all called "Save"
+  is unusable by voice or screen reader. Do not assemble the name from a visually hidden span
+  next to the visible text — accessible-name computation collapses the whitespace between them
+  and produces "SaveBerlin to Munich". Write the whole name in `aria-label`, keeping the visible
+  word as its first token so the spoken name still matches what is on screen.
+- **A control inside a stretched-link card needs `relative z-10`**, or the tap opens the card
+  instead of operating the control.
 
 ## Definition of done
 

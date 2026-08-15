@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { LinkPendingHint } from "@/components/link-pending-hint";
+import { SavedBadge } from "@/components/saved-badge";
+import { SaveTrainButton } from "@/components/save-train-button";
 import { formatDate, formatPrice } from "@/domain/format";
 import { buildTrainPath, type SearchQuery } from "@/domain/search-query";
 import type { Train } from "@/lib/api";
@@ -36,7 +38,10 @@ export function TrainCard({
             <LinkPendingHint />
           </Link>
         </h3>
-        <p className="text-lg font-semibold">{formatPrice(train.price)}</p>
+        <div className="flex items-center gap-2">
+          <SavedBadge id={train.id} />
+          <p className="text-lg font-semibold">{formatPrice(train.price)}</p>
+        </div>
       </div>
 
       <dl className="text-muted flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -60,19 +65,23 @@ export function TrainCard({
         </div>
       </dl>
 
-      {/* A snapshot from the cached list, not a promise. The detail page and the
-          booking response are the authority on availability. */}
-      <p
-        className={
-          soldOut || train.seatsLeft < LOW_AVAILABILITY
-            ? "text-sm font-medium"
-            : "text-muted text-sm"
-        }
-      >
-        {soldOut
-          ? "No seats left"
-          : `${String(train.seatsLeft)} of ${String(train.totalSeats)} seats left`}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* A snapshot from the cached list, not a promise. The detail page and
+            the booking response are the authority on availability. */}
+        <p
+          className={
+            soldOut || train.seatsLeft < LOW_AVAILABILITY
+              ? "text-sm font-medium"
+              : "text-muted text-sm"
+          }
+        >
+          {soldOut
+            ? "No seats left"
+            : `${String(train.seatsLeft)} of ${String(train.totalSeats)} seats left`}
+        </p>
+
+        <SaveTrainButton train={train} />
+      </div>
     </article>
   );
 }

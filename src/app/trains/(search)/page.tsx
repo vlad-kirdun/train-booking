@@ -6,6 +6,7 @@ import { PageFailure } from "@/components/page-failure";
 import { Pagination } from "@/components/pagination";
 import { ResultsError } from "@/components/results-error";
 import { ResultsSkeleton } from "@/components/results-skeleton";
+import { SavedTrainsPanel } from "@/components/saved-trains-panel";
 import { SearchForm } from "@/components/search-form";
 import { SortLinks } from "@/components/sort-links";
 import { TrainCard } from "@/components/train-card";
@@ -75,6 +76,11 @@ export default async function TrainsPage(props: PageProps<"/trains">) {
           this search.
         </p>
       )}
+
+      {/* Above the list rather than reordered into it: a saved train sitting on
+          page 3 would never surface on page 1, which is the opposite of what
+          saving it was for. */}
+      <SavedTrainsPanel query={query} />
 
       {/* Only the results wait on the API. The form above is interactive while
           the request is still in flight, and the key restarts the skeleton for
