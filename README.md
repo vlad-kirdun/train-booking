@@ -53,6 +53,11 @@ _Filled in as the work lands._
 - **Train page** at `/trains/[id]`, fetched uncached so its seat count is the current one rather
   than a cached snapshot. It carries the search that led to it, so the way back is the same page
   of the same ordering. A withdrawn train answers with a real `404`.
+- **Booking, including the case where the seats are gone.** A Server Action places the booking,
+  so the API URL never reaches the browser and the form works without JavaScript. There is no
+  optimistic UI: the only figure shown as fact is one the server returned. A `409` reports the
+  real remaining count, lowers the form's limit to it, and offers the way back to the other
+  trains on the same search.
 - **Resilience to a slow or missing API.** The page shell streams immediately with a results
   skeleton, so the form is usable while the search is still in flight. A failed search reports
   what went wrong — slow, unreachable, misbehaving — and offers a retry, without taking the form

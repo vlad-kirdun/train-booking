@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 
+import { BookingForm } from "@/components/booking-form";
 import { PageFailure } from "@/components/page-failure";
 import { TrainDetail } from "@/components/train-detail";
 import { formatFullDate } from "@/domain/format";
@@ -69,6 +70,12 @@ export default async function TrainPage(props: PageProps<"/trains/[id]">) {
     <main className="mx-auto grid w-full max-w-3xl gap-6 px-4 py-6 sm:py-10">
       <BackToResults query={query} />
       <TrainDetail train={train} />
+      <BookingForm
+        trainId={train.id}
+        price={train.price}
+        seatsLeft={train.seatsLeft}
+        backHref={buildSearchPath(query)}
+      />
     </main>
   );
 }

@@ -168,6 +168,19 @@ each outcome is an ordinary render:
   branch is a primary user flow, not an edge case — it never gets cut for time.
 - `400` / network → distinguishable messages with a retry.
 
+`bookSeats` calls `updateTag(TRAINS_CACHE_TAG)` on both `201` and `409`. The conflict case
+matters as much as the success: a `409` proves the seat count in every cached list is wrong, so
+leaving those lists alone would keep advertising seats that do not exist.
+
+After a Server Action, Next re-renders the current route, so the availability line above the
+form updates from the same response — verified against the live API by draining a train to two
+seats, taking both from outside the browser, then submitting. No stale number survives anywhere
+on the page.
+
+A Server Action is a public endpoint. Validate its `FormData` as untrusted input: a field is a
+string _or a `File`_, and `String(file)` yields `"[object File]"` rather than failing, so read
+fields through a helper that rejects anything that is not a string.
+
 ### Freshness
 
 The results list may serve cached data — it is a browsing surface, and the cache is also what
@@ -237,8 +250,8 @@ Do not propose migrating to path URLs; instead get the most out of this scheme:
 
 - **Vitest + React Testing Library + MSW.** Mock HTTP, not our own modules — tests must run
   through the real client code, including timeouts, retries, and error parsing.
-- **100% line and branch coverage for `src/domain` and `src/lib/api`.** That is where a bug costs
-  money: pricing, filtering, URL parsing, status-code handling.
+- **100% line and branch coverage for `src/domain`, `src/lib/api` and `src/lib/actions`.** That is
+  where a bug costs money: pricing, filtering, URL parsing, status-code handling, booking.
 - **React components get critical-path tests, not coverage for its own sake**: the 409 branch,
   empty results, error recovery, saving a train.
 - **Never call `POST /reset` from a test.** It is a shared sandbox; tests must be isolated.
