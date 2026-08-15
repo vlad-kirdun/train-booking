@@ -123,7 +123,7 @@ async function Results({
         <ul className="grid gap-3">
           {results.items.map((train) => (
             <li key={train.id}>
-              <TrainCard train={train} />
+              <TrainCard train={train} query={query} />
             </li>
           ))}
         </ul>

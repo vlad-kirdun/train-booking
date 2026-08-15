@@ -53,8 +53,11 @@ npm run format         # Prettier
 npm run verify         # lint + typecheck + test:coverage + build — the gate for every step
 ```
 
-`typecheck` runs `next typegen` first because the generated route types under `.next/types`
-are what make `PageProps` and `LayoutProps` resolve. On a clean clone `tsc` alone would fail.
+`lint` and `typecheck` each run `next typegen` first. The generated route types under
+`.next/types` are what make `PageProps` and `LayoutProps` resolve; without them the type-checked
+ESLint rules see `any` and a clean clone fails with eighteen unsafe-assignment errors before
+`typecheck` ever gets a chance to generate anything. Keep every script self-sufficient rather
+than relying on the order inside `verify`.
 
 ## Layout
 
@@ -278,6 +281,21 @@ failure rather than reasoning about one.
 attempt. Measured against a hung API, per-attempt timeouts alone kept the user waiting 24.8
 seconds; the budget brings that to 12. Do not raise it without re-checking what the wait feels
 like.
+
+### `loading.tsx` costs the response status — keep it off `/trains/[id]`
+
+A `loading.tsx` file makes its segment stream, and it applies to child segments too. Once the
+shell has flushed, the status is already `200`, so a `notFound()` reached afterwards renders the
+right page with the wrong status — a withdrawn train would answer a crawler with a working page.
+Measured: with a loading file, `/trains/999999` returned `200`; without one, `404`.
+
+Hence the layout. The search page lives in the `(search)` route group with its loading file, so
+the boundary covers `/trains` and nothing else. `/trains/[id]` has no loading file and keeps its
+`404`. The tap feedback it loses is replaced by `LinkPendingHint`, a `useLinkStatus` client
+component inside the card link — the case the Next docs describe for exactly this situation.
+
+Do not add `app/trains/loading.tsx` or `app/trains/[id]/loading.tsx`. Either one silently
+reintroduces the soft 404.
 
 The stale-cache fallback comes from the framework rather than our code: `force-cache` with
 `revalidate` keeps serving the last good response while revalidation fails in the background.

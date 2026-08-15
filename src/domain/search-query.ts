@@ -91,6 +91,18 @@ export function buildSearchPath(query: SearchQuery): string {
   return params === "" ? "/trains" : `/trains?${params}`;
 }
 
+/**
+ * A train's own page, carrying the search that led to it so the way back
+ * returns to the same page and ordering rather than a reset list. The SEO pass
+ * points these at the bare `/trains/:id` with a canonical tag.
+ */
+export function buildTrainPath(id: string, query: SearchQuery): string {
+  const path = `/trains/${encodeURIComponent(id)}`;
+  const params = serializeSearchQuery(query).toString();
+
+  return params === "" ? path : `${path}?${params}`;
+}
+
 /** Applies a change and returns to page 1: page 3 of the old filter is meaningless. */
 export function withSearchQuery(
   query: SearchQuery,

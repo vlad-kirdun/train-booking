@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildSearchPath,
+  buildTrainPath,
   DEFAULT_SORT,
   EMPTY_SEARCH_QUERY,
   isValidIsoDate,
@@ -229,6 +230,24 @@ describe("buildSearchPath", () => {
   test("appends the query string", () => {
     expect(buildSearchPath(query({ from: "berlin", to: "munich" }))).toBe(
       "/trains?from=berlin&to=munich",
+    );
+  });
+});
+
+describe("buildTrainPath", () => {
+  test("carries the search so the way back lands where the user left", () => {
+    expect(buildTrainPath("42", query({ from: "berlin", page: 3 }))).toBe(
+      "/trains/42?from=berlin&page=3",
+    );
+  });
+
+  test("omits an empty query string", () => {
+    expect(buildTrainPath("42", EMPTY_SEARCH_QUERY)).toBe("/trains/42");
+  });
+
+  test("escapes an id so it cannot alter the path", () => {
+    expect(buildTrainPath("../reset", EMPTY_SEARCH_QUERY)).toBe(
+      "/trains/..%2Freset",
     );
   });
 });

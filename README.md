@@ -50,6 +50,9 @@ _Filled in as the work lands._
   swap, optional date, budget, price sorting and pagination as plain links, a route-aware title,
   and dead ends that offer to undo one specific filter. The form works without JavaScript and
   upgrades to a clean canonical URL when it is available.
+- **Train page** at `/trains/[id]`, fetched uncached so its seat count is the current one rather
+  than a cached snapshot. It carries the search that led to it, so the way back is the same page
+  of the same ordering. A withdrawn train answers with a real `404`.
 - **Resilience to a slow or missing API.** The page shell streams immediately with a results
   skeleton, so the form is usable while the search is still in flight. A failed search reports
   what went wrong — slow, unreachable, misbehaving — and offers a retry, without taking the form

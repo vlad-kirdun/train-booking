@@ -1,17 +1,40 @@
+import Link from "next/link";
+
+import { LinkPendingHint } from "@/components/link-pending-hint";
 import { formatDate, formatPrice } from "@/domain/format";
+import { buildTrainPath, type SearchQuery } from "@/domain/search-query";
 import type { Train } from "@/lib/api";
 
 /** Below this, the count stops being background information and starts mattering. */
 const LOW_AVAILABILITY = 10;
 
-export function TrainCard({ train }: { train: Train }) {
+export function TrainCard({
+  train,
+  query,
+}: {
+  train: Train;
+  query: SearchQuery;
+}) {
   const soldOut = train.seatsLeft === 0;
 
   return (
-    <article className="border-border bg-surface flex flex-col gap-3 rounded-xl border p-4">
+    <article className="border-border bg-surface focus-within:outline-foreground relative flex flex-col gap-3 rounded-xl border p-4 focus-within:outline-2 focus-within:outline-offset-2">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h3 className="text-base font-semibold">
-          {train.from} → {train.to}
+          {/* One link, stretched over the card, so the whole thing is a tap
+              target without nesting interactive elements inside an anchor —
+              which is what lets the save control sit here later. */}
+          <Link
+            href={buildTrainPath(train.id, query)}
+            className="outline-none after:absolute after:inset-0"
+          >
+            {train.from} → {train.to}
+            <span className="sr-only">
+              , {train.trainNumber}, {formatDate(train.departureDate)} at{" "}
+              {train.departureTime}
+            </span>
+            <LinkPendingHint />
+          </Link>
         </h3>
         <p className="text-lg font-semibold">{formatPrice(train.price)}</p>
       </div>
