@@ -121,6 +121,9 @@ test("offers a way out for a train that was already full on arrival", () => {
   renderForm(0);
 
   expect(screen.queryByLabelText("Seats")).toBeNull();
+  // "Book seats" over a section with nothing to book reads as a missing
+  // control rather than a full train.
+  expect(screen.getByRole("heading")).toHaveTextContent("Fully booked");
   expect(
     screen.getByRole("link", { name: "See the other trains on this route" }),
   ).toHaveAttribute("href", "/trains?from=berlin&to=munich");

@@ -45,7 +45,11 @@ export function BookingForm({
 
   return (
     <section className="border-border bg-surface grid gap-4 rounded-xl border p-4 sm:p-5">
-      <h2 className="text-lg font-semibold">Book seats</h2>
+      {/* "Book seats" over a section with nothing to book reads as a control
+          that is missing rather than a train that is full. */}
+      <h2 className="text-lg font-semibold">
+        {available === 0 ? "Fully booked" : "Book seats"}
+      </h2>
 
       {state.status === "sold_out" && (
         <SoldOutNotice seatsLeft={state.seatsLeft} backHref={backHref} />

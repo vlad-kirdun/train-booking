@@ -29,6 +29,17 @@ test("links to the neighbouring pages and keeps the search", () => {
   expect(screen.getByText("Page 2 of 3")).toBeInTheDocument();
 });
 
+// A shared link to page 99 of 2 would otherwise offer 97 clicks through empty
+// pages before reaching anything.
+test("sends a page past the end back to the last page with results", () => {
+  render(<Pagination query={query} page={99} totalPages={2} />);
+
+  expect(screen.getByRole("link", { name: "Previous" })).toHaveAttribute(
+    "href",
+    "/trains?from=berlin&to=munich&page=2",
+  );
+});
+
 test("offers no link past either end", () => {
   const { rerender } = render(
     <Pagination query={query} page={1} totalPages={3} />,

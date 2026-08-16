@@ -99,7 +99,10 @@ export default async function TrainsPage(props: PageProps<"/trains">) {
 
       <SearchForm
         // Remounts on navigation so the controls always mirror the address bar.
-        key={searchKey}
+        // Prefixed because the Suspense boundary below keys off the same search,
+        // and on the hub that search serialises to an empty string — two
+        // siblings sharing the key "" is a collision React cannot resolve.
+        key={`form:${searchKey}`}
         stations={stations}
         query={query}
       />
@@ -120,7 +123,7 @@ export default async function TrainsPage(props: PageProps<"/trains">) {
       {/* Only the results wait on the API. The form above is interactive while
           the request is still in flight, and the key restarts the skeleton for
           each new search instead of leaving the previous results on screen. */}
-      <Suspense key={searchKey} fallback={<ResultsSkeleton />}>
+      <Suspense key={`results:${searchKey}`} fallback={<ResultsSkeleton />}>
         <Results query={query} route={route} />
       </Suspense>
 

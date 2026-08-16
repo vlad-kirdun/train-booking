@@ -19,12 +19,16 @@ interface PaginationProps {
 export function Pagination({ query, page, totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
+  // From a page past the end, stepping back one lands on another empty page —
+  // and another, and another. Aim at the last page that has results instead.
+  const previousPage = Math.min(page - 1, totalPages);
+
   return (
     <nav
       aria-label="Search results pages"
       className="flex items-center justify-between gap-4"
     >
-      <PageLink query={query} page={page - 1} disabled={page <= 1}>
+      <PageLink query={query} page={previousPage} disabled={page <= 1}>
         Previous
       </PageLink>
 
