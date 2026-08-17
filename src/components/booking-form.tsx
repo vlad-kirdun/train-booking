@@ -90,9 +90,9 @@ export function BookingForm({
               max={available}
               step={1}
               required
-              value={seats}
+              value={seats || ""}
               onChange={(event) => {
-                setSeats(event.target.valueAsNumber);
+                setSeats(Math.min(event.target.valueAsNumber, available));
               }}
               className="border-border bg-background focus-visible:outline-foreground h-11 w-full rounded-lg border px-3 focus-visible:outline-2 focus-visible:outline-offset-2"
             />
