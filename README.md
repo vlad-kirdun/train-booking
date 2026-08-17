@@ -192,6 +192,5 @@ These were established by probing the live service, and several of them changed 
 
 ## AI agent logs
 
-The full transcript of the session that produced this repository is included with the submission
-as required. Each commit message records the reasoning behind that step, including the problems
+The full transcript of the session that produced this repository is included ([ai-logs-full-session.md](ai-logs-full-session.md)). Each commit message records the reasoning behind that step, including the problems
 found by running the app rather than by reading the code.
